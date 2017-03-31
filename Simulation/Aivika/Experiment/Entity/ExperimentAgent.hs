@@ -39,8 +39,8 @@ data ExperimentAgent =
     -- ^ Write the entities of time-dependent statistics in final time point.
     writeValueListEntity :: ValueListEntity -> IO (),
     -- ^ Write the value list entity.
-    writeLastValueListEntity :: LastValueListEntity -> IO (),
-    -- ^ Write the last value list entity.
+    writeLastValueListEntities :: [LastValueListEntity] -> IO (),
+    -- ^ Write the last value list entities.
     writeDeviationEntity :: DeviationEntity -> IO (),
     -- ^ Write the deviation entity.
     writeFinalDeviationEntity :: [FinalDeviationEntity] -> IO (),

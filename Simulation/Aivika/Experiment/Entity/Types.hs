@@ -26,6 +26,7 @@ module Simulation.Aivika.Experiment.Entity.Types
         DeviationEntity(..),
         FinalDeviationEntity(..),
         DataEntity(..),
+        MultipleDataEntity(..),
         AggregatedDataEntity(..),
         DataItem(..)) where
  
@@ -97,10 +98,10 @@ type TimingStatsEntity = DataEntity [DataItem (TimingStats Double)]
 type FinalTimingStatsEntity = DataEntity (DataItem (TimingStats Double))
 
 -- | The value list entity.
-type ValueListEntity = AggregatedDataEntity [DataItem [Double]]
+type ValueListEntity = MultipleDataEntity [DataItem [Double]]
 
 -- | Entity of values in the final time point.
-type LastValueListEntity = AggregatedDataEntity (DataItem [Double])
+type LastValueListEntity = MultipleDataEntity (DataItem [Double])
 
 -- | Entity of aggregated sample-based statistics.
 type DeviationEntity = AggregatedDataEntity [DataItem (SamplingStats Double)]
@@ -123,6 +124,20 @@ data DataEntity a =
                dataItem :: a
                -- ^ the data item
              } deriving (Eq, Ord, Show)
+
+-- | The multiple data entity.
+data MultipleDataEntity a =
+  MultipleDataEntity { multipleDataId :: String,
+                       -- ^ an identifier
+                       multipleDataExperimentId :: String,
+                       -- ^ the experiment identifier
+                       multipleDataVarId :: String,
+                       -- ^ the variable identifier
+                       multipleDataSourceId :: String,
+                       -- ^ the source identifier
+                       multipleDataItem :: a
+                       -- ^ the data item
+                     } deriving (Eq, Ord, Show)
 
 -- | The aggregated data entity.
 data AggregatedDataEntity a =

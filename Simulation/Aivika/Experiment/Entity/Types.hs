@@ -75,8 +75,10 @@ data VarEntity =
               -- ^ an identifier
               varExperimentId :: String,
               -- ^ the experiment identifier.
-              varName :: String
+              varName :: String,
               -- ^ the variable name
+              varDescription :: String
+              -- ^ the variable description
             } deriving (Eq, Ord, Show)
 
 -- | The time series entity.

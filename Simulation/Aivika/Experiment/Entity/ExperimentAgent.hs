@@ -54,7 +54,7 @@ data ExperimentAgent =
     readVarEntities :: Int -> IO [VarEntity],
     -- ^ Read the variable entities by the experiment identifier.
     readOrCreateVarEntities :: Int -> [(String, String)] -> IO [VarEntity],
-    -- ^ Requests the var entities by the specified experiment identifier
+    -- ^ Requests the variable entities by the specified experiment identifier
     -- and pairs of the variable names and descriptions, creating
     -- the variable entities if needed.
     readTimeSeriesEntities :: Int -> Int -> Int -> IO [IO TimeSeriesEntity],

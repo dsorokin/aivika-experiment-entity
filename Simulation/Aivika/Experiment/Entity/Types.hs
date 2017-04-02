@@ -61,7 +61,7 @@ data ExperimentEntity =
                      -- ^ the integration method
                      experimentRunCount :: !Int,
                      -- ^ the run count
-                     experimentRealStartTime :: Rational
+                     experimentRealStartTime :: String
                      -- ^ the real start time of simulation
                    } deriving (Eq, Ord, Show, Typeable, Generic)
 

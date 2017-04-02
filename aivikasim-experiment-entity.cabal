@@ -39,4 +39,4 @@ library
 source-repository head
 
     type:     git
-    location: https://github.com/dsorokin/aivikasim-experiment-data
+    location: https://github.com/dsorokin/aivikasim-experiment-entity

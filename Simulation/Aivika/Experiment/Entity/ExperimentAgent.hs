@@ -7,7 +7,7 @@
 -- Stability  : experimental
 -- Tested with: GHC 8.0.2
 --
--- This module defines entities of simulation experiments.
+-- This module defines the experiment agent.
 --
 
 module Simulation.Aivika.Experiment.Entity.ExperimentAgent

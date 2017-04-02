@@ -13,7 +13,11 @@
 module Simulation.Aivika.Experiment.Entity
        (-- * Modules
         module Simulation.Aivika.Experiment.Entity.ExperimentAgent,
-        module Simulation.Aivika.Experiment.Entity.Types) where
+        module Simulation.Aivika.Experiment.Entity.ExperimentAggregator,
+        module Simulation.Aivika.Experiment.Entity.Types,
+        module Simulation.Aivika.Experiment.Entity.UUID) where
 
 import Simulation.Aivika.Experiment.Entity.ExperimentAgent
+import Simulation.Aivika.Experiment.Entity.ExperimentAggregator
 import Simulation.Aivika.Experiment.Entity.Types
+import Simulation.Aivika.Experiment.Entity.UUID

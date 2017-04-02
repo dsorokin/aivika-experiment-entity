@@ -1,4 +1,6 @@
 
+{-# LANGUAGE DeriveDataTypeable, DeriveGeneric #-}
+
 -- |
 -- Module     : Simulation.Aivika.Experiment.Entity.Types
 -- Copyright  : Copyright (c) 2017, David Sorokin <david.sorokin@gmail.com>
@@ -30,11 +32,19 @@ module Simulation.Aivika.Experiment.Entity.Types
         AggregatedDataEntity(..),
         DataItem(..)) where
  
+import GHC.Generics (Generic)
+
+import Control.DeepSeq
+
+import Data.Typeable
+import Data.Binary
+
 import Simulation.Aivika
+import Simulation.Aivika.Experiment.Entity.UUID
 
 -- | The experiment entity.
 data ExperimentEntity =
-  ExperimentEntity { experimentId :: String,
+  ExperimentEntity { experimentId :: UUID,
                      -- ^ the experiment identifier
                      experimentTitle :: String,
                      -- ^ the experiment title
@@ -52,8 +62,11 @@ data ExperimentEntity =
                      -- ^ the run count
                      experimentRealStartTime :: Rational
                      -- ^ the real start time of simulation
-                   } deriving (Eq, Ord, Show)
-                      
+                   } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData ExperimentEntity
+instance Binary ExperimentEntity
+                              
 -- | The integration method.
 data ExperimentIntegMethod = EulerIntegMethod
                              -- ^ Euler's method
@@ -61,7 +74,10 @@ data ExperimentIntegMethod = EulerIntegMethod
                              -- ^ The 2nd order Runge-Kutta method
                            | RK4IntegMethod
                              -- ^ The 4th order Runge-Kutta method
-                             deriving (Eq, Ord, Show)
+                             deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData ExperimentIntegMethod
+instance Binary ExperimentIntegMethod
 
 -- | Convert the integration method to an integer.
 experimentIntegMethodToInt :: ExperimentIntegMethod -> Int
@@ -71,15 +87,18 @@ experimentIntegMethodToInt RK4IntegMethod   = 3
 
 -- | The variable entity
 data VarEntity =
-  VarEntity { varId :: String,
+  VarEntity { varId :: UUID,
               -- ^ an identifier
-              varExperimentId :: String,
+              varExperimentId :: UUID,
               -- ^ the experiment identifier.
               varName :: String,
               -- ^ the variable name
               varDescription :: String
               -- ^ the variable description
-            } deriving (Eq, Ord, Show)
+            } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData VarEntity
+instance Binary VarEntity
 
 -- | The time series entity.
 type TimeSeriesEntity = DataEntity [DataItem Double]
@@ -113,47 +132,56 @@ type FinalDeviationEntity = AggregatedDataEntity (DataItem (SamplingStats Double
 
 -- | The data entity.
 data DataEntity a =
-  DataEntity { dataId :: String,
+  DataEntity { dataId :: UUID,
                -- ^ an identifier
-               dataExperimentId :: String,
+               dataExperimentId :: UUID,
                -- ^ the experiment identifier
                dataRunIndex :: !Int,
                -- ^ the run index
-               dataVarId :: String,
+               dataVarId :: UUID,
                -- ^ the variable identifier
-               dataSourceId :: String,
+               dataSourceId :: UUID,
                -- ^ the source identifier
                dataItem :: a
                -- ^ the data item
-             } deriving (Eq, Ord, Show)
+             } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData a => NFData (DataEntity a)
+instance Binary a => Binary (DataEntity a)
 
 -- | The multiple data entity.
 data MultipleDataEntity a =
-  MultipleDataEntity { multipleDataId :: String,
+  MultipleDataEntity { multipleDataId :: UUID,
                        -- ^ an identifier
-                       multipleDataExperimentId :: String,
+                       multipleDataExperimentId :: UUID,
                        -- ^ the experiment identifier
-                       multipleDataVarId :: String,
+                       multipleDataVarId :: UUID,
                        -- ^ the variable identifier
-                       multipleDataSourceId :: String,
+                       multipleDataSourceId :: UUID,
                        -- ^ the source identifier
                        multipleDataItem :: a
                        -- ^ the data item
-                     } deriving (Eq, Ord, Show)
+                     } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData a => NFData (MultipleDataEntity a)
+instance Binary a => Binary (MultipleDataEntity a)
 
 -- | The aggregated data entity.
 data AggregatedDataEntity a =
-  AggregatedDataEntity { aggregatedDataId :: String,
+  AggregatedDataEntity { aggregatedDataId :: UUID,
                          -- ^ an identifier
-                         aggregaredDataExperimentId :: String,
+                         aggregatedDataExperimentId :: UUID,
                          -- ^ the experiment identifier
-                         aggregatedDataVarId :: String,
+                         aggregatedDataVarId :: UUID,
                          -- ^ the variable identifier
-                         aggregatedDataSourceId :: String,
+                         aggregatedDataSourceId :: UUID,
                          -- ^ the source identifier
                          aggregatedDataItem :: a
                          -- ^ the data item
-                       } deriving (Eq, Ord, Show)
+                       } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData a => NFData (AggregatedDataEntity a)
+instance Binary a => Binary (AggregatedDataEntity a)
 
 -- | The data item.
 data DataItem a =
@@ -163,4 +191,7 @@ data DataItem a =
              -- ^ the integration iteration
              dataItemTime :: !Double
              -- ^ the corresponding modeling time
-           } deriving (Eq, Ord, Show)
+           } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData a => NFData (DataItem a)
+instance Binary a => Binary (DataItem a)

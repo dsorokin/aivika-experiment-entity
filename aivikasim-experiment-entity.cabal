@@ -19,10 +19,19 @@ library
 
     exposed-modules: Simulation.Aivika.Experiment.Entity
                      Simulation.Aivika.Experiment.Entity.ExperimentAgent
+                     Simulation.Aivika.Experiment.Entity.ExperimentAggregator
                      Simulation.Aivika.Experiment.Entity.Types
+                     Simulation.Aivika.Experiment.Entity.UUID
 
     build-depends:   base >= 3 && < 6,
+                     stm >= 2.4.2,
+                     containers >= 0.4.0.0,
+                     deepseq >= 1.1.0.0,
+                     binary >= 0.6.4.0,
                      aivikasim >= 1.0
+
+    extensions:      DeriveGeneric,
+                     DeriveDataTypeable
 
     ghc-options:     -O2
 

@@ -13,10 +13,12 @@
 --
 
 module Simulation.Aivika.Experiment.Entity.Types
-       (ExperimentEntity(..),
+       (ExperimentUUID,
+        ExperimentEntity(..),
         ExperimentIntegMethod(..),
         experimentIntegMethodToInt,
         experimentIntegMethodFromInt,
+        VarUUID,
         VarEntity(..),
         TimeSeriesEntity(..),
         LastValueEntity(..),
@@ -28,8 +30,12 @@ module Simulation.Aivika.Experiment.Entity.Types
         LastValueListEntity(..),
         DeviationEntity(..),
         FinalDeviationEntity(..),
+        SourceUUID,
+        DataUUID,
         DataEntity(..),
+        MultipleDataUUID,
         MultipleDataEntity(..),
+        AggregatedDataUUID,
         AggregatedDataEntity(..),
         DataItem(..)) where
  
@@ -43,9 +49,12 @@ import Data.Binary
 import Simulation.Aivika
 import Simulation.Aivika.Experiment.Entity.UUID
 
+-- | The experiment identifier.
+type ExperimentUUID = UUID
+
 -- | The experiment entity.
 data ExperimentEntity =
-  ExperimentEntity { experimentId :: UUID,
+  ExperimentEntity { experimentId :: ExperimentUUID,
                      -- ^ the experiment identifier
                      experimentTitle :: String,
                      -- ^ the experiment title
@@ -96,11 +105,14 @@ experimentIntegMethodFromInt i =
   "Unknown integration method code (" ++ show i ++
   "): experimentIntegMethodFromInt"
 
+-- | The variable identifier.
+type VarUUID = UUID
+
 -- | The variable entity
 data VarEntity =
-  VarEntity { varId :: UUID,
+  VarEntity { varId :: VarUUID,
               -- ^ an identifier
-              varExperimentId :: UUID,
+              varExperimentId :: ExperimentUUID,
               -- ^ the experiment identifier.
               varName :: String,
               -- ^ the variable name
@@ -141,17 +153,23 @@ type DeviationEntity = AggregatedDataEntity [DataItem (SamplingStats Double)]
 -- | Entity of aggregated sample-based statistics in final time point.
 type FinalDeviationEntity = AggregatedDataEntity (DataItem (SamplingStats Double))
 
+-- | The source identifier.
+type SourceUUID = String
+
+-- | The data identifier.
+type DataUUID = UUID
+
 -- | The data entity.
 data DataEntity a =
-  DataEntity { dataId :: UUID,
+  DataEntity { dataId :: DataUUID,
                -- ^ an identifier
-               dataExperimentId :: UUID,
+               dataExperimentId :: ExperimentUUID,
                -- ^ the experiment identifier
                dataRunIndex :: !Int,
                -- ^ the run index
-               dataVarId :: UUID,
+               dataVarId :: VarUUID,
                -- ^ the variable identifier
-               dataSourceId :: UUID,
+               dataSourceId :: SourceUUID,
                -- ^ the source identifier
                dataItem :: a
                -- ^ the data item
@@ -160,15 +178,18 @@ data DataEntity a =
 instance NFData a => NFData (DataEntity a)
 instance Binary a => Binary (DataEntity a)
 
+-- | The multiple data identifier.
+type MultipleDataUUID = UUID
+
 -- | The multiple data entity.
 data MultipleDataEntity a =
-  MultipleDataEntity { multipleDataId :: UUID,
+  MultipleDataEntity { multipleDataId :: MultipleDataUUID,
                        -- ^ an identifier
-                       multipleDataExperimentId :: UUID,
+                       multipleDataExperimentId :: ExperimentUUID,
                        -- ^ the experiment identifier
-                       multipleDataVarId :: UUID,
+                       multipleDataVarId :: VarUUID,
                        -- ^ the variable identifier
-                       multipleDataSourceId :: UUID,
+                       multipleDataSourceId :: SourceUUID,
                        -- ^ the source identifier
                        multipleDataItem :: a
                        -- ^ the data item
@@ -177,15 +198,18 @@ data MultipleDataEntity a =
 instance NFData a => NFData (MultipleDataEntity a)
 instance Binary a => Binary (MultipleDataEntity a)
 
+-- | The aggregated data identifier.
+type AggregatedDataUUID = UUID
+
 -- | The aggregated data entity.
 data AggregatedDataEntity a =
-  AggregatedDataEntity { aggregatedDataId :: UUID,
+  AggregatedDataEntity { aggregatedDataId :: AggregatedDataUUID,
                          -- ^ an identifier
-                         aggregatedDataExperimentId :: UUID,
+                         aggregatedDataExperimentId :: ExperimentUUID,
                          -- ^ the experiment identifier
-                         aggregatedDataVarId :: UUID,
+                         aggregatedDataVarId :: VarUUID,
                          -- ^ the variable identifier
-                         aggregatedDataSourceId :: UUID,
+                         aggregatedDataSourceId :: SourceUUID,
                          -- ^ the source identifier
                          aggregatedDataItem :: a
                          -- ^ the data item

@@ -141,6 +141,8 @@ data SourceEntity =
                  -- ^ the source index.
                  sourceTitle :: String,
                  -- ^ the source title.
+                 sourceDescription :: String,
+                 -- ^ the source description.
                  sourceVarEntities :: [VarEntity]
                  -- ^ the source variable entities.
                } deriving (Eq, Ord, Show, Typeable, Generic)

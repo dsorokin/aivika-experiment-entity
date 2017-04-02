@@ -49,9 +49,9 @@ data ExperimentAgent =
     -- ^ Read the variable entity by experiment and variable identifiers.
     readVarEntities :: ExperimentUUID -> IO [VarEntity],
     -- ^ Read the variable entities by the experiment identifier.
-    readOrCreateSourceEntity :: ExperimentUUID -> SourceKey -> String -> [(String, String)] -> IO SourceEntity,
+    readOrCreateSourceEntity :: ExperimentUUID -> SourceKey -> String -> String -> [(String, String)] -> IO SourceEntity,
     -- ^ Read or create a source entity by the specified experiment identifier,
-    -- source key, title and a list of pairs of variable names and descriptions.
+    -- source key, title, description and a list of pairs of variable names and descriptions.
     readSourceEntity :: ExperimentUUID -> SourceUUID -> IO SourceEntity,
     -- ^ Read the source entity by the experiment and source identifier.
     readSourceEntities :: ExperimentUUID -> IO [SourceEntity],

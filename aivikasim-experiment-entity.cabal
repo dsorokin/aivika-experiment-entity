@@ -28,6 +28,7 @@ library
                      containers >= 0.4.0.0,
                      deepseq >= 1.1.0.0,
                      binary >= 0.6.4.0,
+                     random >= 1.0.0.3,
                      aivikasim >= 1.0
 
     extensions:      DeriveGeneric,

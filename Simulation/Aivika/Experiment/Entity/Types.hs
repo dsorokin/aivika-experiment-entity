@@ -20,6 +20,9 @@ module Simulation.Aivika.Experiment.Entity.Types
         experimentIntegMethodFromInt,
         VarUUID,
         VarEntity(..),
+        SourceUUID,
+        SourceKey,
+        SourceEntity(..),
         TimeSeriesEntity(..),
         LastValueEntity(..),
         SamplingStatsEntity(..),
@@ -30,7 +33,6 @@ module Simulation.Aivika.Experiment.Entity.Types
         LastValueListEntity(..),
         DeviationEntity(..),
         FinalDeviationEntity(..),
-        SourceUUID,
         DataUUID,
         DataEntity(..),
         MultipleDataUUID,
@@ -108,10 +110,10 @@ experimentIntegMethodFromInt i =
 -- | The variable identifier.
 type VarUUID = UUID
 
--- | The variable entity
+-- | The variable entity.
 data VarEntity =
   VarEntity { varId :: VarUUID,
-              -- ^ an identifier
+              -- ^ an identifier.
               varExperimentId :: ExperimentUUID,
               -- ^ the experiment identifier.
               varName :: String,
@@ -123,6 +125,29 @@ data VarEntity =
 instance NFData VarEntity
 instance Binary VarEntity
 
+-- | The source identifier.
+type SourceUUID = UUID
+
+-- | The source key.
+type SourceKey = String
+
+-- | The source entity.
+data SourceEntity =
+  SourceEntity { sourceId :: SourceUUID,
+                 -- ^ an identifier.
+                 sourceExperimentId :: ExperimentUUID,
+                 -- ^ the experiment identifier.
+                 sourceKey :: SourceKey,
+                 -- ^ the source index.
+                 sourceTitle :: String,
+                 -- ^ the source title.
+                 sourceVarEntities :: [VarEntity]
+                 -- ^ the source variable entities.
+               } deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData SourceEntity
+instance Binary SourceEntity
+                 
 -- | The time series entity.
 type TimeSeriesEntity = DataEntity [DataItem Double]
 
@@ -152,9 +177,6 @@ type DeviationEntity = AggregatedDataEntity [DataItem (SamplingStats Double)]
 
 -- | Entity of aggregated sample-based statistics in final time point.
 type FinalDeviationEntity = AggregatedDataEntity (DataItem (SamplingStats Double))
-
--- | The source identifier.
-type SourceUUID = String
 
 -- | The data identifier.
 type DataUUID = UUID

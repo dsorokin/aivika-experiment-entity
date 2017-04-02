@@ -16,6 +16,7 @@ module Simulation.Aivika.Experiment.Entity.Types
        (ExperimentEntity(..),
         ExperimentIntegMethod(..),
         experimentIntegMethodToInt,
+        experimentIntegMethodFromInt,
         VarEntity(..),
         TimeSeriesEntity(..),
         LastValueEntity(..),
@@ -84,6 +85,16 @@ experimentIntegMethodToInt :: ExperimentIntegMethod -> Int
 experimentIntegMethodToInt EulerIntegMethod = 1
 experimentIntegMethodToInt RK2IntegMethod   = 2
 experimentIntegMethodToInt RK4IntegMethod   = 3
+
+-- | Convert the integration method from the integer.
+experimentIntegMethodFromInt :: Int -> ExperimentIntegMethod
+experimentIntegMethodFromInt 1 = EulerIntegMethod
+experimentIntegMethodFromInt 2 = RK2IntegMethod
+experimentIntegMethodFromInt 3 = RK4IntegMethod
+experimentIntegMethodFromInt i =
+  error $
+  "Unknown integration method code (" ++ show i ++
+  "): experimentIntegMethodFromInt"
 
 -- | The variable entity
 data VarEntity =

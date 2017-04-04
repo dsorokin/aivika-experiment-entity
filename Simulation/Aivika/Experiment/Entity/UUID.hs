@@ -7,7 +7,7 @@
 -- Stability  : experimental
 -- Tested with: GHC 8.0.2
 --
--- This module allows generating unique identifiers..
+-- This module allows generating unique identifiers.
 --
 
 module Simulation.Aivika.Experiment.Entity.UUID

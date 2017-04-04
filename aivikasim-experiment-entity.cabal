@@ -21,9 +21,11 @@ library
                      Simulation.Aivika.Experiment.Entity.ExperimentAgent
                      Simulation.Aivika.Experiment.Entity.ExperimentAggregator
                      Simulation.Aivika.Experiment.Entity.Types
+                     Simulation.Aivika.Experiment.Entity.Utils
                      Simulation.Aivika.Experiment.Entity.UUID
 
     build-depends:   base >= 3 && < 6,
+                     mtl >= 2.1.1,
                      stm >= 2.4.2,
                      containers >= 0.4.0.0,
                      deepseq >= 1.1.0.0,

@@ -110,7 +110,7 @@ experimentIntegMethodFromInt i =
 -- | The variable identifier.
 type VarUUID = UUID
 
--- | The variable entity.
+-- | The variable entity, where PK is ('varExperimentId', 'varName') for consistency.
 data VarEntity =
   VarEntity { varId :: VarUUID,
               -- ^ an identifier.
@@ -131,7 +131,7 @@ type SourceUUID = UUID
 -- | The source key.
 type SourceKey = String
 
--- | The source entity.
+-- | The source entity, where PK is ('sourceExperimentId', 'sourceKey') for consistency.
 data SourceEntity =
   SourceEntity { sourceId :: SourceUUID,
                  -- ^ an identifier.

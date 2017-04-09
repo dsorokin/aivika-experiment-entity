@@ -30,6 +30,7 @@ import Control.Monad.Trans
 import Control.Concurrent.MVar
 
 import Data.List
+import qualified Data.Map as M
 
 import Simulation.Aivika
 import Simulation.Aivika.Experiment.Entity.Types
@@ -194,16 +195,20 @@ readOrCreateSourceEntityByKey agent expId srcKey srcTitle srcDescr varNs srcType
               False -> return Nothing
               True  -> return (Just srcEntity)
        Just srcEntity ->
-         do let varNs' = map (\x -> (varEntityName x, varEntityDescription x)) (sourceEntityVarEntities srcEntity)
+         do let varMap = M.fromList $ map (\x -> (varEntityName x, x)) (sourceEntityVarEntities srcEntity)
+            varEntities <- forM varNs $ \(varName, varDescr) ->
+              case M.lookup varName varMap of
+                Just e | varEntityDescription e == varDescr ->
+                  return e 
+                _ ->
+                  error "Variable mismatch: readOrCreateSourceEntityByKey"
             when (sourceEntityTitle srcEntity /= srcTitle) $
               error "Source title mismatch: readOrCreateSourceEntityByKey"
             when (sourceEntityDescription srcEntity /= srcDescr) $
               error "Source description mismatch: readOrCreateSourceEntityByKey"
-            when (sort varNs' /= sort varNs) $
-              error "Source variable mismatch: readOrCreateSourceEntityByKey"
             when (sourceEntityType srcEntity /= srcType) $
               error "Source entity type mismatch: readOrCreateSourceEntityByKey"
-            return (Just srcEntity)
+            return (Just srcEntity { sourceEntityVarEntities = varEntities })
 
 -- | Write the multiple value list entity.
 writeMultipleValueListEntity :: ExperimentAgent -> MultipleValueListEntity -> IO ()

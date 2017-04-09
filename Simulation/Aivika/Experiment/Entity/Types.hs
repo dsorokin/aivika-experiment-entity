@@ -161,7 +161,7 @@ data SourceEntityType = TimeSeriesEntityType
                         -- ^ the time series entity
                       | LastValueEntityType
                         -- ^ the last values in final time point
-                      | SamplingStatsEnityType
+                      | SamplingStatsEntityType
                         -- ^ the sample-based statistics entity
                       | FinalSamplingStatsEntityType
                         -- ^ the entity of sample-based statistics in final time point
@@ -190,7 +190,7 @@ instance Binary SourceEntityType
 sourceEntityTypeToInt :: SourceEntityType -> Int
 sourceEntityTypeToInt TimeSeriesEntityType            = 1
 sourceEntityTypeToInt LastValueEntityType             = 2
-sourceEntityTypeToInt SamplingStatsEnityType          = 3
+sourceEntityTypeToInt SamplingStatsEntityType         = 3
 sourceEntityTypeToInt FinalSamplingStatsEntityType    = 4
 sourceEntityTypeToInt TimingStatsEntityType           = 5
 sourceEntityTypeToInt FinalTimingStatsEntityType      = 6
@@ -205,7 +205,7 @@ sourceEntityTypeToInt FinalDeviationEntityType        = 12
 sourceEntityTypeFromInt :: Int -> SourceEntityType
 sourceEntityTypeFromInt 1  = TimeSeriesEntityType
 sourceEntityTypeFromInt 2  = LastValueEntityType
-sourceEntityTypeFromInt 3  = SamplingStatsEnityType
+sourceEntityTypeFromInt 3  = SamplingStatsEntityType
 sourceEntityTypeFromInt 4  = FinalSamplingStatsEntityType
 sourceEntityTypeFromInt 5  = TimingStatsEntityType
 sourceEntityTypeFromInt 6  = FinalTimingStatsEntityType

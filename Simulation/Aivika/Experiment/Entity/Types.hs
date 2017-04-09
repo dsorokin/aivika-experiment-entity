@@ -173,6 +173,10 @@ data SourceEntityType = TimeSeriesEntityType
                         -- ^ the value list entity
                       | LastValueListEntityType
                         -- ^ the entity of values in the final time point
+                      | MultipleValueListEntityType
+                        -- ^ the multiple value list entity
+                      | MultipleLastValueListEntityType
+                        -- ^ the entity of multiple values in the final time point
                       | DeviationEntityType
                         -- ^ the entity of aggregated sample-based statistics
                       | FinalDeviationEntityType
@@ -184,16 +188,18 @@ instance Binary SourceEntityType
 
 -- | Convert the source entity type to an integer.
 sourceEntityTypeToInt :: SourceEntityType -> Int
-sourceEntityTypeToInt TimeSeriesEntityType         = 1
-sourceEntityTypeToInt LastValueEntityType          = 2
-sourceEntityTypeToInt SamplingStatsEnityType       = 3
-sourceEntityTypeToInt FinalSamplingStatsEntityType = 4
-sourceEntityTypeToInt TimingStatsEntityType        = 5
-sourceEntityTypeToInt FinalTimingStatsEntityType   = 6
-sourceEntityTypeToInt ValueListEntityType          = 7
-sourceEntityTypeToInt LastValueListEntityType      = 8
-sourceEntityTypeToInt DeviationEntityType          = 9
-sourceEntityTypeToInt FinalDeviationEntityType     = 10
+sourceEntityTypeToInt TimeSeriesEntityType            = 1
+sourceEntityTypeToInt LastValueEntityType             = 2
+sourceEntityTypeToInt SamplingStatsEnityType          = 3
+sourceEntityTypeToInt FinalSamplingStatsEntityType    = 4
+sourceEntityTypeToInt TimingStatsEntityType           = 5
+sourceEntityTypeToInt FinalTimingStatsEntityType      = 6
+sourceEntityTypeToInt ValueListEntityType             = 7
+sourceEntityTypeToInt LastValueListEntityType         = 8
+sourceEntityTypeToInt MultipleValueListEntityType     = 9
+sourceEntityTypeToInt MultipleLastValueListEntityType = 10
+sourceEntityTypeToInt DeviationEntityType             = 11
+sourceEntityTypeToInt FinalDeviationEntityType        = 12
 
 -- | Convert the source entity type from the integer.
 sourceEntityTypeFromInt :: Int -> SourceEntityType
@@ -205,8 +211,10 @@ sourceEntityTypeFromInt 5  = TimingStatsEntityType
 sourceEntityTypeFromInt 6  = FinalTimingStatsEntityType
 sourceEntityTypeFromInt 7  = ValueListEntityType
 sourceEntityTypeFromInt 8  = LastValueListEntityType
-sourceEntityTypeFromInt 9  = DeviationEntityType
-sourceEntityTypeFromInt 10 = FinalDeviationEntityType
+sourceEntityTypeFromInt 9  = MultipleValueListEntityType
+sourceEntityTypeFromInt 10  = MultipleLastValueListEntityType
+sourceEntityTypeFromInt 11 = DeviationEntityType
+sourceEntityTypeFromInt 12 = FinalDeviationEntityType
 sourceEntityTypeFromInt i  =
   error $
   "Unknown source entity type code (" ++ show i ++

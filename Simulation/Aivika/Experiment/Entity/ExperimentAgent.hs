@@ -49,8 +49,6 @@ data ExperimentAgent =
     -- ^ Initialise the agent.
     finaliseAgent :: IO (),
     -- ^ Finalise the agent.
-    writeExperimentEntity :: ExperimentEntity -> IO (),
-    -- ^ Write the experiment entity.
     tryWriteExperimentEntity :: ExperimentEntity -> IO Bool,
     -- ^ Try to write the experiment entity.
     tryWriteSourceEntity :: SourceEntity -> IO Bool,

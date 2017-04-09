@@ -11,7 +11,10 @@
 --
 
 module Simulation.Aivika.Experiment.Entity.ExperimentAgent
-       (ExperimentAgent(..),
+       (ExperimentAgentConstructor(..),
+        ExperimentAgent(..),
+        writeValueListEntity,
+        writeLastValueListEntities,
         readOrCreateVarEntityByName,
         readOrCreateSourceEntityByKey,
         retryAgentAction) where
@@ -20,10 +23,18 @@ import Control.Monad
 import Control.Monad.Trans
 import Control.Concurrent.MVar
 
+import Data.List
+
 import Simulation.Aivika
 import Simulation.Aivika.Experiment.Entity.Types
 import Simulation.Aivika.Experiment.Entity.UUID
 import Simulation.Aivika.Experiment.Entity.Utils
+
+-- | A class type of experiment agent constructors.
+class ExperimentAgentConstructor c where
+
+  -- | Create a new experiment agent.
+  newExperimentAgent :: c -> IO ExperimentAgent
 
 -- | The experiment agent.
 data ExperimentAgent =
@@ -32,8 +43,14 @@ data ExperimentAgent =
     -- ^ The number of retries to apply the transaction.
     agentRetryDelay :: Int,
     -- ^ The delay in microseconds before the retry.
+    initialiseAgent :: IO (),
+    -- ^ Initialise the agent.
+    finaliseAgent :: IO (),
+    -- ^ Finalise the agent.
     writeExperimentEntity :: ExperimentEntity -> IO (),
     -- ^ Write the experiment entity.
+    tryWriteExperimentEntity :: ExperimentEntity -> IO Bool,
+    -- ^ Try to write the experiment entity.
     tryWriteSourceEntity :: SourceEntity -> IO Bool,
     -- ^ Try to write the source entity.
     tryWriteVarEntity :: VarEntity -> IO Bool,
@@ -50,13 +67,11 @@ data ExperimentAgent =
     -- ^ Write the time-dependent statistics entity.
     writeFinalTimingStatsEntity :: FinalTimingStatsEntity -> IO (),
     -- ^ Write the entities of time-dependent statistics in final time point.
-    writeValueListEntity :: ValueListEntity -> IO (),
-    -- ^ Write the value list entity.
-    writeLastValueListEntities :: [LastValueListEntity] -> IO (),
-    -- ^ Write the last value list entities.
+    writeMultipleValueEntities :: [MultipleValueEntity] -> IO (),
+    -- ^ Write the multiple value entities.
     writeDeviationEntity :: DeviationEntity -> IO (),
     -- ^ Write the deviation entity.
-    writeFinalDeviationEntity :: [FinalDeviationEntity] -> IO (),
+    writeFinalDeviationEntities :: [FinalDeviationEntity] -> IO (),
     -- ^ Write the final deviation entities.
     readExperimentEntity :: ExperimentUUID -> IO (Maybe ExperimentEntity),
     -- ^ Read the experiment entity by its identifier.
@@ -92,16 +107,19 @@ data ExperimentAgent =
     readFinalTimingStatsEntities :: ExperimentUUID -> SourceUUID -> Int -> IO [FinalTimingStatsEntity],
     -- ^ Read the entities of time-dependent statistics in final points by
     -- experiment and source identifiers. run index.
+    readMultipleValueEntities :: ExperimentUUID -> SourceUUID -> IO [IO MultipleValueEntity],
+    -- ^ Read the multiple value entities by experiment and
+    -- source identifiers.
     readValueListEntities :: ExperimentUUID -> SourceUUID -> IO [IO ValueListEntity],
     -- ^ Read the value list entities by experiment and
     -- source identifiers.
     readLastValueListEntities :: ExperimentUUID -> SourceUUID -> IO [IO LastValueListEntity],
     -- ^ Read the last value list entities by experiment and
     -- source identifiers.
-    readDeviationEntity :: ExperimentUUID -> SourceUUID -> IO [IO DeviationEntity],
+    readDeviationEntities :: ExperimentUUID -> SourceUUID -> IO [IO DeviationEntity],
     -- ^ Read the deviation entity by experiment and
     -- source identifiers.
-    readFinalDeviationEntity :: ExperimentUUID -> SourceUUID -> IO [FinalDeviationEntity]
+    readFinalDeviationEntities :: ExperimentUUID -> SourceUUID -> IO [FinalDeviationEntity]
     -- ^ Read the final deviation entity by experiment and
     -- source identifiers.
     }
@@ -127,16 +145,16 @@ readOrCreateVarEntityByName agent expId name descr =
      case x of
        Nothing ->
          do id <- newRandomUUID
-            let varEntity = VarEntity { varId = id,
-                                        varExperimentId = expId,
-                                        varName = name,
-                                        varDescription = descr }
+            let varEntity = VarEntity { varEntityId = id,
+                                        varEntityExperimentId = expId,
+                                        varEntityName = name,
+                                        varEntityDescription = descr }
             f <- tryWriteVarEntity agent varEntity
             case f of
               False -> return Nothing
               True  -> return (Just varEntity)
        Just varEntity ->
-         do when (varDescription varEntity /= descr) $
+         do when (varEntityDescription varEntity /= descr) $
               error "Variable description mismatch: readOrCreateVarEntityByName"
             return (Just varEntity)
 
@@ -154,8 +172,10 @@ readOrCreateSourceEntityByKey :: ExperimentAgent
                                  -- ^ the description
                                  -> [(String, String)]
                                  -- ^ the pairs of variable names and descriptions
+                                 -> SourceEntityType
+                                 -- ^ the source entity type
                                  -> IO SourceEntity
-readOrCreateSourceEntityByKey agent expId srcKey srcTitle srcDescr varNs =
+readOrCreateSourceEntityByKey agent expId srcKey srcTitle srcDescr varNs srcType =
   retryAgentAction agent $
   do x <- readSourceEntityByKey agent expId srcKey
      case x of
@@ -164,22 +184,37 @@ readOrCreateSourceEntityByKey agent expId srcKey srcTitle srcDescr varNs =
               forM varNs $ \(varName, varDescr) ->
               readOrCreateVarEntityByName agent expId varName varDescr
             srcId <- newRandomUUID
-            let srcEntity = SourceEntity { sourceId = srcId,
-                                           sourceExperimentId = expId,
-                                           sourceKey = srcKey,
-                                           sourceTitle = srcTitle,
-                                           sourceDescription = srcDescr,
-                                           sourceVarEntities = varEntities }
+            let srcEntity = SourceEntity { sourceEntityId = srcId,
+                                           sourceEntityExperimentId = expId,
+                                           sourceEntityKey = srcKey,
+                                           sourceEntityTitle = srcTitle,
+                                           sourceEntityDescription = srcDescr,
+                                           sourceEntityVarEntities = varEntities,
+                                           sourceEntityType = srcType }
             f <- tryWriteSourceEntity agent srcEntity
             case f of
               False -> return Nothing
               True  -> return (Just srcEntity)
        Just srcEntity ->
-         do let varNs' = map (\x -> (varName x, varDescription x)) (sourceVarEntities srcEntity)
-            when (sourceTitle srcEntity /= srcTitle) $
+         do let varNs' = map (\x -> (varEntityName x, varEntityDescription x)) (sourceEntityVarEntities srcEntity)
+            when (sourceEntityTitle srcEntity /= srcTitle) $
               error "Source title mismatch: readOrCreateSourceEntityByKey"
-            when (sourceDescription srcEntity /= srcDescr) $
+            when (sourceEntityDescription srcEntity /= srcDescr) $
               error "Source description mismatch: readOrCreateSourceEntityByKey"
-            when (varNs' /= varNs) $
+            when (sort varNs' /= sort varNs) $
               error "Source variable mismatch: readOrCreateSourceEntityByKey"
+            when (sourceEntityType srcEntity /= srcType) $
+              error "Source entity type mismatch: readOrCreateSourceEntityByKey"
             return (Just srcEntity)
+
+-- | Write the value list entity.
+writeValueListEntity :: ExperimentAgent -> ValueListEntity -> IO ()
+writeValueListEntity agent e = writeMultipleValueEntities agent [convertEntity e]
+  where convertEntity e   = e { multipleDataEntityItem = mconcat $ map convertDataItem (multipleDataEntityItem e) }
+        convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }
+
+-- | Write the last value list entities.
+writeLastValueListEntities :: ExperimentAgent -> [LastValueListEntity] -> IO ()
+writeLastValueListEntities agent es = writeMultipleValueEntities agent $ map convertEntity es
+  where convertEntity e   = e { multipleDataEntityItem = convertDataItem (multipleDataEntityItem e) }
+        convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }

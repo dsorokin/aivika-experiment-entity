@@ -85,9 +85,9 @@ aggregateInDeviationEntity :: ExperimentAggregator -> SamplingStatsEntity -> IO 
 aggregateInDeviationEntity aggregator entity0 =
   join $
   atomically $
-  do let k = AggregateKey { aggregateKeyExperimentId = dataExperimentId entity0,
-                            aggregateKeyVarId = dataVarId entity0,
-                            aggregateKeySourceId = dataSourceId entity0 }
+  do let k = AggregateKey { aggregateKeyExperimentId = dataEntityExperimentId entity0,
+                            aggregateKeyVarId = dataEntityVarId entity0,
+                            aggregateKeySourceId = dataEntitySourceId entity0 }
          agent    = experimentAggregatorAgent aggregator
          runCount = experimentAggregatorRunCount aggregator
          tvar     = experimentAggregatorDeviationEntities aggregator
@@ -98,23 +98,23 @@ aggregateInDeviationEntity aggregator entity0 =
          do entity' <- samplingStatsToDeviationEntity entity0
             writeDeviationEntity agent entity'
        Nothing ->
-         do let i = dataItem entity0
+         do let i = dataEntityItem entity0
                 v = AccumulatedAggregateValue 1 i
-            writeTVar tvar $
-              M.insert k v M.empty
+            modifyTVar tvar $
+              M.insert k v
             return $
               return ()
        Just z@(AccumulatedAggregateValue runCount' i') | runCount' == runCount - 1 ->
-         do let i   = dataItem entity0
+         do let i   = dataEntityItem entity0
                 i'' = appendDeviationDataItem i' i
                 v   = FlushedAggregateValue
             modifyTVar tvar $
               M.insert k v
             return $
-              do entity' <- samplingStatsToDeviationEntity $ entity0 { dataItem = i'' } 
+              do entity' <- samplingStatsToDeviationEntity $ entity0 { dataEntityItem = i'' } 
                  writeDeviationEntity agent entity'
        Just z@(AccumulatedAggregateValue runCount' i') ->
-         do let i   = dataItem entity0
+         do let i   = dataEntityItem entity0
                 i'' = appendDeviationDataItem i' i
                 v   = AccumulatedAggregateValue (runCount' + 1) i''
             modifyTVar tvar $
@@ -131,9 +131,9 @@ aggregateInFinalDeviationEntity :: ExperimentAggregator -> FinalSamplingStatsEnt
 aggregateInFinalDeviationEntity aggregator entity0 =
   join $
   atomically $
-  do let k = AggregateKey { aggregateKeyExperimentId = dataExperimentId entity0,
-                            aggregateKeyVarId = dataVarId entity0,
-                            aggregateKeySourceId = dataSourceId entity0 }
+  do let k = AggregateKey { aggregateKeyExperimentId = dataEntityExperimentId entity0,
+                            aggregateKeyVarId = dataEntityVarId entity0,
+                            aggregateKeySourceId = dataEntitySourceId entity0 }
          agent    = experimentAggregatorAgent aggregator
          runCount = experimentAggregatorRunCount aggregator
          tvar     = experimentAggregatorFinalDeviationEntities aggregator
@@ -142,25 +142,25 @@ aggregateInFinalDeviationEntity aggregator entity0 =
        Nothing | runCount == 1 ->
          return $
          do entity' <- finalSamplingStatsToFinalDeviationEntity entity0
-            writeFinalDeviationEntity agent [entity']
+            writeFinalDeviationEntities agent [entity']
        Nothing ->
-         do let i = dataItem entity0
+         do let i = dataEntityItem entity0
                 v = AccumulatedAggregateValue 1 i
-            writeTVar tvar $
-              M.insert k v M.empty
+            modifyTVar tvar $
+              M.insert k v
             return $
               return ()
        Just z@(AccumulatedAggregateValue runCount' i') | runCount' == runCount - 1 ->
-         do let i   = dataItem entity0
+         do let i   = dataEntityItem entity0
                 i'' = appendFinalDeviationDataItem i' i
                 v   = FlushedAggregateValue
             modifyTVar tvar $
               M.insert k v
             return $
-              do entity' <- finalSamplingStatsToFinalDeviationEntity $ entity0 { dataItem = i'' } 
-                 writeFinalDeviationEntity agent [entity']
+              do entity' <- finalSamplingStatsToFinalDeviationEntity $ entity0 { dataEntityItem = i'' } 
+                 writeFinalDeviationEntities agent [entity']
        Just z@(AccumulatedAggregateValue runCount' i') ->
-         do let i   = dataItem entity0
+         do let i   = dataEntityItem entity0
                 i'' = appendFinalDeviationDataItem i' i
                 v   = AccumulatedAggregateValue (runCount' + 1) i''
             modifyTVar tvar $
@@ -176,23 +176,23 @@ aggregateInFinalDeviationEntity aggregator entity0 =
 samplingStatsToDeviationEntity :: SamplingStatsEntity -> IO DeviationEntity
 samplingStatsToDeviationEntity entity0 =
   do entityId <- newRandomUUID
-     return AggregatedDataEntity {
-       aggregatedDataId = entityId,
-       aggregatedDataExperimentId = dataExperimentId entity0,
-       aggregatedDataVarId = dataVarId entity0,
-       aggregatedDataSourceId = dataSourceId entity0,
-       aggregatedDataItem = dataItem entity0 }
+     return MultipleDataEntity {
+       multipleDataEntityId = entityId,
+       multipleDataEntityExperimentId = dataEntityExperimentId entity0,
+       multipleDataEntityVarId = dataEntityVarId entity0,
+       multipleDataEntitySourceId = dataEntitySourceId entity0,
+       multipleDataEntityItem = dataEntityItem entity0 }
 
 -- | A conversion.                  
 finalSamplingStatsToFinalDeviationEntity :: FinalSamplingStatsEntity -> IO FinalDeviationEntity
 finalSamplingStatsToFinalDeviationEntity entity0 =
   do entityId <- newRandomUUID
-     return AggregatedDataEntity {
-       aggregatedDataId = entityId,
-       aggregatedDataExperimentId = dataExperimentId entity0,
-       aggregatedDataVarId = dataVarId entity0,
-       aggregatedDataSourceId = dataSourceId entity0,
-       aggregatedDataItem = dataItem entity0 }
+     return MultipleDataEntity {
+       multipleDataEntityId = entityId,
+       multipleDataEntityExperimentId = dataEntityExperimentId entity0,
+       multipleDataEntityVarId = dataEntityVarId entity0,
+       multipleDataEntitySourceId = dataEntitySourceId entity0,
+       multipleDataEntityItem = dataEntityItem entity0 }
 
 -- | Append the accumulated data.
 appendDeviationDataItem :: DeviationDataItem -> DeviationDataItem -> DeviationDataItem

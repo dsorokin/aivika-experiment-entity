@@ -23,12 +23,16 @@ module Simulation.Aivika.Experiment.Entity.Types
         SourceUUID,
         SourceKey,
         SourceEntity(..),
+        SourceEntityType(..),
+        sourceEntityTypeToInt,
+        sourceEntityTypeFromInt,
         TimeSeriesEntity(..),
         LastValueEntity(..),
         SamplingStatsEntity(..),
         FinalSamplingStatsEntity(..),
         TimingStatsEntity(..),
         FinalTimingStatsEntity(..),
+        MultipleValueEntity(..),
         ValueListEntity(..),
         LastValueListEntity(..),
         DeviationEntity(..),
@@ -37,8 +41,6 @@ module Simulation.Aivika.Experiment.Entity.Types
         DataEntity(..),
         MultipleDataUUID,
         MultipleDataEntity(..),
-        AggregatedDataUUID,
-        AggregatedDataEntity(..),
         DataItem(..)) where
  
 import GHC.Generics (Generic)
@@ -56,23 +58,23 @@ type ExperimentUUID = UUID
 
 -- | The experiment entity.
 data ExperimentEntity =
-  ExperimentEntity { experimentId :: ExperimentUUID,
+  ExperimentEntity { experimentEntityId :: ExperimentUUID,
                      -- ^ the experiment identifier
-                     experimentTitle :: String,
+                     experimentEntityTitle :: String,
                      -- ^ the experiment title
-                     experimentDescription :: String,
+                     experimentEntityDescription :: String,
                      -- ^ the experiment description
-                     experimentStartTime :: !Double,
+                     experimentEntityStartTime :: !Double,
                      -- ^ the start modeling time
-                     experimentStopTime :: !Double,
+                     experimentEntityStopTime :: !Double,
                      -- ^ the stop modeling time
-                     experimentDT :: !Double,
+                     experimentEntityDT :: !Double,
                      -- ^ the integration time step
-                     experimentIntegMethod :: ExperimentIntegMethod,
+                     experimentEntityIntegMethod :: ExperimentIntegMethod,
                      -- ^ the integration method
-                     experimentRunCount :: !Int,
+                     experimentEntityRunCount :: !Int,
                      -- ^ the run count
-                     experimentRealStartTime :: String
+                     experimentEntityRealStartTime :: String
                      -- ^ the real start time of simulation
                    } deriving (Eq, Ord, Show, Typeable, Generic)
 
@@ -110,15 +112,15 @@ experimentIntegMethodFromInt i =
 -- | The variable identifier.
 type VarUUID = UUID
 
--- | The variable entity, where PK is ('varExperimentId', 'varName') for consistency.
+-- | The variable entity, where PK is ('varEntityExperimentId', 'varEntityName') for consistency.
 data VarEntity =
-  VarEntity { varId :: VarUUID,
+  VarEntity { varEntityId :: VarUUID,
               -- ^ an identifier.
-              varExperimentId :: ExperimentUUID,
+              varEntityExperimentId :: ExperimentUUID,
               -- ^ the experiment identifier.
-              varName :: String,
+              varEntityName :: String,
               -- ^ the variable name
-              varDescription :: String
+              varEntityDescription :: String
               -- ^ the variable description
             } deriving (Eq, Ord, Show, Typeable, Generic)
 
@@ -131,25 +133,83 @@ type SourceUUID = UUID
 -- | The source key.
 type SourceKey = String
 
--- | The source entity, where PK is ('sourceExperimentId', 'sourceKey') for consistency.
+-- | The source entity, where PK is ('sourceEntityExperimentId', 'sourceEntityKey') for consistency.
 data SourceEntity =
-  SourceEntity { sourceId :: SourceUUID,
+  SourceEntity { sourceEntityId :: SourceUUID,
                  -- ^ an identifier.
-                 sourceExperimentId :: ExperimentUUID,
+                 sourceEntityExperimentId :: ExperimentUUID,
                  -- ^ the experiment identifier.
-                 sourceKey :: SourceKey,
+                 sourceEntityKey :: SourceKey,
                  -- ^ the source index.
-                 sourceTitle :: String,
+                 sourceEntityTitle :: String,
                  -- ^ the source title.
-                 sourceDescription :: String,
+                 sourceEntityDescription :: String,
                  -- ^ the source description.
-                 sourceVarEntities :: [VarEntity]
+                 sourceEntityVarEntities :: [VarEntity],
                  -- ^ the source variable entities.
+                 sourceEntityType :: SourceEntityType
+                 -- ^ the source entity type.
                } deriving (Eq, Ord, Show, Typeable, Generic)
 
 instance NFData SourceEntity
 instance Binary SourceEntity
-                 
+
+-- | The source entity type.
+data SourceEntityType = TimeSeriesEntityType
+                        -- ^ the time series entity
+                      | LastValueEntityType
+                        -- ^ the last values in final time point
+                      | SamplingStatsEnityType
+                        -- ^ the sample-based statistics entity
+                      | FinalSamplingStatsEntityType
+                        -- ^ the entity of sample-based statistics in final time point
+                      | TimingStatsEntityType
+                        -- ^ the time-dependent statistics entity
+                      | FinalTimingStatsEntityType
+                        -- ^ the entity of time-dependent statistics in final time point
+                      | ValueListEntityType
+                        -- ^ the value list entity
+                      | LastValueListEntityType
+                        -- ^ the entity of values in the final time point
+                      | DeviationEntityType
+                        -- ^ the entity of aggregated sample-based statistics
+                      | FinalDeviationEntityType
+                        -- ^ the entity of aggregated sample-based statistics in final time point
+                      deriving (Eq, Ord, Show, Typeable, Generic)
+
+instance NFData SourceEntityType
+instance Binary SourceEntityType
+
+-- | Convert the source entity type to an integer.
+sourceEntityTypeToInt :: SourceEntityType -> Int
+sourceEntityTypeToInt TimeSeriesEntityType         = 1
+sourceEntityTypeToInt LastValueEntityType          = 2
+sourceEntityTypeToInt SamplingStatsEnityType       = 3
+sourceEntityTypeToInt FinalSamplingStatsEntityType = 4
+sourceEntityTypeToInt TimingStatsEntityType        = 5
+sourceEntityTypeToInt FinalTimingStatsEntityType   = 6
+sourceEntityTypeToInt ValueListEntityType          = 7
+sourceEntityTypeToInt LastValueListEntityType      = 8
+sourceEntityTypeToInt DeviationEntityType          = 9
+sourceEntityTypeToInt FinalDeviationEntityType     = 10
+
+-- | Convert the source entity type from the integer.
+sourceEntityTypeFromInt :: Int -> SourceEntityType
+sourceEntityTypeFromInt 1  = TimeSeriesEntityType
+sourceEntityTypeFromInt 2  = LastValueEntityType
+sourceEntityTypeFromInt 3  = SamplingStatsEnityType
+sourceEntityTypeFromInt 4  = FinalSamplingStatsEntityType
+sourceEntityTypeFromInt 5  = TimingStatsEntityType
+sourceEntityTypeFromInt 6  = FinalTimingStatsEntityType
+sourceEntityTypeFromInt 7  = ValueListEntityType
+sourceEntityTypeFromInt 8  = LastValueListEntityType
+sourceEntityTypeFromInt 9  = DeviationEntityType
+sourceEntityTypeFromInt 10 = FinalDeviationEntityType
+sourceEntityTypeFromInt i  =
+  error $
+  "Unknown source entity type code (" ++ show i ++
+  "): sourceEntityTypeFromInt"
+
 -- | The time series entity.
 type TimeSeriesEntity = DataEntity [DataItem Double]
 
@@ -168,6 +228,9 @@ type TimingStatsEntity = DataEntity [DataItem (TimingStats Double)]
 -- | Entity of the time-dependent statistics in final time point.
 type FinalTimingStatsEntity = DataEntity (DataItem (TimingStats Double))
 
+-- | The multiple value entity.
+type MultipleValueEntity = MultipleDataEntity [DataItem Double]
+
 -- | The value list entity.
 type ValueListEntity = MultipleDataEntity [DataItem [Double]]
 
@@ -175,27 +238,27 @@ type ValueListEntity = MultipleDataEntity [DataItem [Double]]
 type LastValueListEntity = MultipleDataEntity (DataItem [Double])
 
 -- | Entity of aggregated sample-based statistics.
-type DeviationEntity = AggregatedDataEntity [DataItem (SamplingStats Double)]
+type DeviationEntity = MultipleDataEntity [DataItem (SamplingStats Double)]
 
 -- | Entity of aggregated sample-based statistics in final time point.
-type FinalDeviationEntity = AggregatedDataEntity (DataItem (SamplingStats Double))
+type FinalDeviationEntity = MultipleDataEntity (DataItem (SamplingStats Double))
 
 -- | The data identifier.
 type DataUUID = UUID
 
 -- | The data entity.
 data DataEntity a =
-  DataEntity { dataId :: DataUUID,
+  DataEntity { dataEntityId :: DataUUID,
                -- ^ an identifier
-               dataExperimentId :: ExperimentUUID,
+               dataEntityExperimentId :: ExperimentUUID,
                -- ^ the experiment identifier
-               dataRunIndex :: !Int,
+               dataEntityRunIndex :: !Int,
                -- ^ the run index
-               dataVarId :: VarUUID,
+               dataEntityVarId :: VarUUID,
                -- ^ the variable identifier
-               dataSourceId :: SourceUUID,
+               dataEntitySourceId :: SourceUUID,
                -- ^ the source identifier
-               dataItem :: a
+               dataEntityItem :: a
                -- ^ the data item
              } deriving (Eq, Ord, Show, Typeable, Generic)
 
@@ -207,40 +270,20 @@ type MultipleDataUUID = UUID
 
 -- | The multiple data entity.
 data MultipleDataEntity a =
-  MultipleDataEntity { multipleDataId :: MultipleDataUUID,
+  MultipleDataEntity { multipleDataEntityId :: MultipleDataUUID,
                        -- ^ an identifier
-                       multipleDataExperimentId :: ExperimentUUID,
+                       multipleDataEntityExperimentId :: ExperimentUUID,
                        -- ^ the experiment identifier
-                       multipleDataVarId :: VarUUID,
+                       multipleDataEntityVarId :: VarUUID,
                        -- ^ the variable identifier
-                       multipleDataSourceId :: SourceUUID,
+                       multipleDataEntitySourceId :: SourceUUID,
                        -- ^ the source identifier
-                       multipleDataItem :: a
+                       multipleDataEntityItem :: a
                        -- ^ the data item
                      } deriving (Eq, Ord, Show, Typeable, Generic)
 
 instance NFData a => NFData (MultipleDataEntity a)
 instance Binary a => Binary (MultipleDataEntity a)
-
--- | The aggregated data identifier.
-type AggregatedDataUUID = UUID
-
--- | The aggregated data entity.
-data AggregatedDataEntity a =
-  AggregatedDataEntity { aggregatedDataId :: AggregatedDataUUID,
-                         -- ^ an identifier
-                         aggregatedDataExperimentId :: ExperimentUUID,
-                         -- ^ the experiment identifier
-                         aggregatedDataVarId :: VarUUID,
-                         -- ^ the variable identifier
-                         aggregatedDataSourceId :: SourceUUID,
-                         -- ^ the source identifier
-                         aggregatedDataItem :: a
-                         -- ^ the data item
-                       } deriving (Eq, Ord, Show, Typeable, Generic)
-
-instance NFData a => NFData (AggregatedDataEntity a)
-instance Binary a => Binary (AggregatedDataEntity a)
 
 -- | The data item.
 data DataItem a =

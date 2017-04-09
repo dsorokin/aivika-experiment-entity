@@ -11,7 +11,8 @@
 --
 
 module Simulation.Aivika.Experiment.Entity.Utils
-       (retryAction) where
+       (retryAction,
+        divideBy) where
 
 import Control.Concurrent
 
@@ -33,3 +34,11 @@ retryAction n delay action =
        Nothing ->
          do threadDelay delay
             retryAction (n - 1) delay action
+
+-- | Divide the list by the specified number of items.
+divideBy :: Int -> [a] -> [[a]]
+divideBy n xs = loop ys ys'
+  where loop [] zs' = []
+        loop zs zs' = zs : divideBy n zs'
+        (ys, ys') = splitAt n xs
+        

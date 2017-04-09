@@ -32,9 +32,11 @@ module Simulation.Aivika.Experiment.Entity.Types
         FinalSamplingStatsEntity(..),
         TimingStatsEntity(..),
         FinalTimingStatsEntity(..),
-        MultipleValueEntity(..),
         ValueListEntity(..),
         LastValueListEntity(..),
+        MultipleValueEntity(..),
+        MultipleValueListEntity(..),
+        MultipleLastValueListEntity(..),
         DeviationEntity(..),
         FinalDeviationEntity(..),
         DataUUID,
@@ -228,14 +230,20 @@ type TimingStatsEntity = DataEntity [DataItem (TimingStats Double)]
 -- | Entity of the time-dependent statistics in final time point.
 type FinalTimingStatsEntity = DataEntity (DataItem (TimingStats Double))
 
+-- | The value list entity.
+type ValueListEntity = DataEntity [DataItem [Double]]
+
+-- | Entity of values in the final time point.
+type LastValueListEntity = DataEntity (DataItem [Double])
+
 -- | The multiple value entity.
 type MultipleValueEntity = MultipleDataEntity [DataItem Double]
 
 -- | The value list entity.
-type ValueListEntity = MultipleDataEntity [DataItem [Double]]
+type MultipleValueListEntity = MultipleDataEntity [DataItem [Double]]
 
 -- | Entity of values in the final time point.
-type LastValueListEntity = MultipleDataEntity (DataItem [Double])
+type MultipleLastValueListEntity = MultipleDataEntity (DataItem [Double])
 
 -- | Entity of aggregated sample-based statistics.
 type DeviationEntity = MultipleDataEntity [DataItem (SamplingStats Double)]

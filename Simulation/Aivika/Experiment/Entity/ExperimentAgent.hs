@@ -13,10 +13,10 @@
 module Simulation.Aivika.Experiment.Entity.ExperimentAgent
        (ExperimentAgentConstructor(..),
         ExperimentAgent(..),
-        writeValueListEntity,
-        writeLastValueListEntities,
-        readValueListEntities,
-        readLastValueListEntities,
+        writeMultipleValueListEntity,
+        writeMultipleLastValueListEntities,
+        readMultipleValueListEntities,
+        readMultipleLastValueListEntities,
         readOrCreateVarEntityByName,
         readOrCreateSourceEntityByKey,
         retryAgentAction) where
@@ -65,7 +65,7 @@ data ExperimentAgent =
     -- ^ Write the entities of sample-based statistics in final time point.
     writeTimingStatsEntity :: TimingStatsEntity -> IO (),
     -- ^ Write the time-dependent statistics entity.
-    writeFinalTimingStatsEntity :: FinalTimingStatsEntity -> IO (),
+    writeFinalTimingStatsEntities :: [FinalTimingStatsEntity] -> IO (),
     -- ^ Write the entities of time-dependent statistics in final time point.
     writeMultipleValueEntities :: [MultipleValueEntity] -> IO (),
     -- ^ Write the multiple value entities.
@@ -201,21 +201,21 @@ readOrCreateSourceEntityByKey agent expId srcKey srcTitle srcDescr varNs srcType
               error "Source entity type mismatch: readOrCreateSourceEntityByKey"
             return (Just srcEntity)
 
--- | Write the value list entity.
-writeValueListEntity :: ExperimentAgent -> ValueListEntity -> IO ()
-writeValueListEntity agent e = writeMultipleValueEntities agent [convertEntity e]
+-- | Write the multiple value list entity.
+writeMultipleValueListEntity :: ExperimentAgent -> MultipleValueListEntity -> IO ()
+writeMultipleValueListEntity agent e = writeMultipleValueEntities agent [convertEntity e]
   where convertEntity e   = e { multipleDataEntityItem = mconcat $ map convertDataItem (multipleDataEntityItem e) }
         convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }
 
--- | Write the last value list entities.
-writeLastValueListEntities :: ExperimentAgent -> [LastValueListEntity] -> IO ()
-writeLastValueListEntities agent es = writeMultipleValueEntities agent $ map convertEntity es
+-- | Write the multiple last value list entities.
+writeMultipleLastValueListEntities :: ExperimentAgent -> [MultipleLastValueListEntity] -> IO ()
+writeMultipleLastValueListEntities agent es = writeMultipleValueEntities agent $ map convertEntity es
   where convertEntity e   = e { multipleDataEntityItem = convertDataItem (multipleDataEntityItem e) }
         convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }
 
--- | Read the value list entities by experiment and source identifiers.
-readValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO ValueListEntity]
-readValueListEntities agent expId srcId = fmap (map $ fmap convertEntity) $ readMultipleValueEntities agent expId srcId
+-- | Read the multiple value list entities by experiment and source identifiers.
+readMultipleValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO MultipleValueListEntity]
+readMultipleValueListEntities agent expId srcId = fmap (map $ fmap convertEntity) $ readMultipleValueEntities agent expId srcId
   where convertEntity e = e { multipleDataEntityItem = groupDataItems (multipleDataEntityItem e) }
         groupDataItems = concatDataItems . groupBy (\x y -> dataItemTime x == dataItemTime y)
         concatDataItems = map packDataItems
@@ -223,9 +223,9 @@ readValueListEntities agent expId srcId = fmap (map $ fmap convertEntity) $ read
         packDataItems xs@(x : _) = x { dataItemValue = map dataItemValue xs }
 
 -- | Read the last value list entities by experiment and source identifiers.
-readLastValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO LastValueListEntity]
-readLastValueListEntities agent expId srcId = fmap (map $ fmap lastEntity) $ readValueListEntities agent expId srcId
+readMultipleLastValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO MultipleLastValueListEntity]
+readMultipleLastValueListEntities agent expId srcId = fmap (map $ fmap lastEntity) $ readMultipleValueListEntities agent expId srcId
   where lastEntity e = e { multipleDataEntityItem = lastDataItem (multipleDataEntityItem e) }
-        lastDataItem []  = error "There is no value list: readLastValueListEntities"
+        lastDataItem []  = error "There is no value list: readMultipleLastValueListEntities"
         lastDataItem [x] = x
-        lastDataItem _   = error "Expected a single value list only: readLastValueListEntities"
+        lastDataItem _   = error "Expected a single value list only: readMultipleLastValueListEntities"

@@ -228,6 +228,6 @@ readValueListEntities agent expId srcId = fmap (map $ fmap convertEntity) $ read
 readLastValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO LastValueListEntity]
 readLastValueListEntities agent expId srcId = fmap (map $ fmap lastEntity) $ readValueListEntities agent expId srcId
   where lastEntity e = e { multipleDataEntityItem = lastDataItem (multipleDataEntityItem e) }
-        lastDataItem []  = error "Expected a last value list: readLastValueListEntities"
+        lastDataItem []  = error "There is no value list: readLastValueListEntities"
         lastDataItem [x] = x
-        lastDataItem (x : xs) = lastDataItem xs
+        lastDataItem _   = error "Expected a single value list only: readLastValueListEntities"

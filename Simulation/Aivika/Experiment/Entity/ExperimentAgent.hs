@@ -15,6 +15,8 @@ module Simulation.Aivika.Experiment.Entity.ExperimentAgent
         ExperimentAgent(..),
         writeValueListEntity,
         writeLastValueListEntities,
+        readValueListEntities,
+        readLastValueListEntities,
         readOrCreateVarEntityByName,
         readOrCreateSourceEntityByKey,
         retryAgentAction) where
@@ -109,12 +111,6 @@ data ExperimentAgent =
     -- experiment and source identifiers. run index.
     readMultipleValueEntities :: ExperimentUUID -> SourceUUID -> IO [IO MultipleValueEntity],
     -- ^ Read the multiple value entities by experiment and
-    -- source identifiers.
-    readValueListEntities :: ExperimentUUID -> SourceUUID -> IO [IO ValueListEntity],
-    -- ^ Read the value list entities by experiment and
-    -- source identifiers.
-    readLastValueListEntities :: ExperimentUUID -> SourceUUID -> IO [IO LastValueListEntity],
-    -- ^ Read the last value list entities by experiment and
     -- source identifiers.
     readDeviationEntities :: ExperimentUUID -> SourceUUID -> IO [IO DeviationEntity],
     -- ^ Read the deviation entity by experiment and
@@ -218,3 +214,20 @@ writeLastValueListEntities :: ExperimentAgent -> [LastValueListEntity] -> IO ()
 writeLastValueListEntities agent es = writeMultipleValueEntities agent $ map convertEntity es
   where convertEntity e   = e { multipleDataEntityItem = convertDataItem (multipleDataEntityItem e) }
         convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }
+
+-- | Read the value list entities by experiment and source identifiers.
+readValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO ValueListEntity]
+readValueListEntities agent expId srcId = fmap (map $ fmap convertEntity) $ readMultipleValueEntities agent expId srcId
+  where convertEntity e = e { multipleDataEntityItem = groupDataItems (multipleDataEntityItem e) }
+        groupDataItems = concatDataItems . groupBy (\x y -> dataItemTime x == dataItemTime y)
+        concatDataItems = map packDataItems
+        packDataItems [x] = x { dataItemValue = [dataItemValue x] }
+        packDataItems xs@(x : _) = x { dataItemValue = map dataItemValue xs }
+
+-- | Read the last value list entities by experiment and source identifiers.
+readLastValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO LastValueListEntity]
+readLastValueListEntities agent expId srcId = fmap (map $ fmap lastEntity) $ readValueListEntities agent expId srcId
+  where lastEntity e = e { multipleDataEntityItem = lastDataItem (multipleDataEntityItem e) }
+        lastDataItem []  = error "Expected a last value list: readLastValueListEntities"
+        lastDataItem [x] = x
+        lastDataItem (x : xs) = lastDataItem xs

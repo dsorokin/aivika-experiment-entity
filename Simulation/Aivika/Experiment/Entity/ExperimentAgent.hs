@@ -13,8 +13,12 @@
 module Simulation.Aivika.Experiment.Entity.ExperimentAgent
        (ExperimentAgentConstructor(..),
         ExperimentAgent(..),
+        writeValueListEntity,
+        writeLastValueListEntities,
         writeMultipleValueListEntity,
         writeMultipleLastValueListEntities,
+        readValueListEntities,
+        readLastValueListEntities,
         readMultipleValueListEntities,
         readMultipleLastValueListEntities,
         readOrCreateVarEntityByName,
@@ -222,10 +226,39 @@ readMultipleValueListEntities agent expId srcId = fmap (map $ fmap convertEntity
         packDataItems [x] = x { dataItemValue = [dataItemValue x] }
         packDataItems xs@(x : _) = x { dataItemValue = map dataItemValue xs }
 
--- | Read the last value list entities by experiment and source identifiers.
+-- | Read the multiple last value list entities by experiment and source identifiers.
 readMultipleLastValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> IO [IO MultipleLastValueListEntity]
 readMultipleLastValueListEntities agent expId srcId = fmap (map $ fmap lastEntity) $ readMultipleValueListEntities agent expId srcId
   where lastEntity e = e { multipleDataEntityItem = lastDataItem (multipleDataEntityItem e) }
         lastDataItem []  = error "There is no value list: readMultipleLastValueListEntities"
         lastDataItem [x] = x
         lastDataItem _   = error "Expected a single value list only: readMultipleLastValueListEntities"
+
+-- | Write the value list entity.
+writeValueListEntity :: ExperimentAgent -> ValueListEntity -> IO ()
+writeValueListEntity agent e = writeTimeSeriesEntity agent (convertEntity e)
+  where convertEntity e   = e { dataEntityItem = mconcat $ map convertDataItem (dataEntityItem e) }
+        convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }
+
+-- | Write the last value list entities.
+writeLastValueListEntities :: ExperimentAgent -> [LastValueListEntity] -> IO ()
+writeLastValueListEntities agent es = mapM_ (writeTimeSeriesEntity agent) $ map convertEntity es
+  where convertEntity e   = e { dataEntityItem = convertDataItem (dataEntityItem e) }
+        convertDataItem i = flip map (dataItemValue i) $ \v -> i { dataItemValue = v }
+
+-- | Read the value list entities by experiment, source identifiers and run index.
+readValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> Int -> IO [IO ValueListEntity]
+readValueListEntities agent expId srcId runIndex = fmap (map $ fmap convertEntity) $ readTimeSeriesEntities agent expId srcId runIndex
+  where convertEntity e = e { dataEntityItem = groupDataItems (dataEntityItem e) }
+        groupDataItems = concatDataItems . groupBy (\x y -> dataItemTime x == dataItemTime y)
+        concatDataItems = map packDataItems
+        packDataItems [x] = x { dataItemValue = [dataItemValue x] }
+        packDataItems xs@(x : _) = x { dataItemValue = map dataItemValue xs }
+
+-- | Read the last value list entities by experiment, source identifiers and run index.
+readLastValueListEntities :: ExperimentAgent -> ExperimentUUID -> SourceUUID -> Int -> IO [IO LastValueListEntity]
+readLastValueListEntities agent expId srcId runIndex = fmap (map $ fmap lastEntity) $ readValueListEntities agent expId srcId runIndex
+  where lastEntity e = e { dataEntityItem = lastDataItem (dataEntityItem e) }
+        lastDataItem []  = error "There is no value list: readLastValueListEntities"
+        lastDataItem [x] = x
+        lastDataItem _   = error "Expected a single value list only: readLastValueListEntities"

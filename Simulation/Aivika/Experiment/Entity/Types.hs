@@ -43,7 +43,8 @@ module Simulation.Aivika.Experiment.Entity.Types
         DataEntity(..),
         MultipleDataUUID,
         MultipleDataEntity(..),
-        DataItem(..)) where
+        DataItem(..),
+        concatDataItems) where
  
 import GHC.Generics (Generic)
 
@@ -313,3 +314,24 @@ data DataItem a =
 
 instance NFData a => NFData (DataItem a)
 instance Binary a => Binary (DataItem a)
+
+-- | Concatenate the data items.
+concatDataItems :: [[DataItem a]] -> [DataItem [a]]
+concatDataItems [xs] = map (\x -> x { dataItemValue = [dataItemValue x] }) xs
+concatDataItems (xs : xss') =
+  let merge x ys
+        | dataItemTime x /= dataItemTime ys = error "Time mismatch : concatDataItems"
+        | otherwise = x { dataItemValue = dataItemValue x : dataItemValue ys }
+      propagateX x ys  = x { dataItemTime = dataItemTime ys }
+      propagateYs x ys = ys { dataItemTime = dataItemTime x }
+      loop [x] [ys]              = [merge x ys]
+      loop [x] (ys : ys2 : yss') = merge x ys : loop [propagateX x ys2] (ys2 : yss')
+      loop (x : x2 : xs') [ys]   = merge x ys : loop (x2 : xs') [propagateYs x2 ys]
+      loop (x : x2 : xs') (ys : ys2 : yss')
+        | dataItemTime x2 < dataItemTime ys2  =
+          merge x ys : loop (x2 : xs') (propagateYs x2 ys : ys2 : yss')
+        | dataItemTime x2 > dataItemTime ys2  =
+          merge x ys : loop (propagateX x ys2 : x2 : xs') (ys2 : yss')
+        | dataItemTime x2 == dataItemTime ys2 =
+          merge x ys : loop (x2 : xs') (ys2 : yss')
+  in loop xs (concatDataItems xss')

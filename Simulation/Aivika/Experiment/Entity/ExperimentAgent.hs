@@ -23,6 +23,7 @@ module Simulation.Aivika.Experiment.Entity.ExperimentAgent
         readMultipleLastValueListEntities,
         readOrCreateVarEntityByName,
         readOrCreateSourceEntityByKey,
+        requireSourceEntityByKey,
         retryAgentAction) where
 
 import Control.Monad
@@ -267,3 +268,13 @@ readLastValueListEntities agent expId srcId runIndex = fmap (map $ fmap lastEnti
         lastDataItem []  = error "There is no value list: readLastValueListEntities"
         lastDataItem [x] = x
         lastDataItem _   = error "Expected a single value list only: readLastValueListEntities"
+
+-- ^ Require that the source entity by the experiment identifier and source key can be read.
+requireSourceEntityByKey :: ExperimentAgent -> ExperimentUUID -> SourceKey -> IO SourceEntity
+requireSourceEntityByKey agent expId srcKey =
+  do x <- readSourceEntityByKey agent expId srcKey
+     case x of
+       Just a  -> return a
+       Nothing -> error $
+                  "Cannot read the source entity by experiment id = " ++ show expId ++
+                  " and source key = " ++ show srcKey ++ ": requireSourceEntityByKey"

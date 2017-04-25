@@ -51,10 +51,8 @@ data ExperimentAgent =
     -- ^ The number of retries to apply the transaction.
     agentRetryDelay :: Int,
     -- ^ The delay in microseconds before the retry.
-    initialiseAgent :: IO (),
-    -- ^ Initialise the agent.
-    finaliseAgent :: IO (),
-    -- ^ Finalise the agent.
+    initialiseEntitySchema :: IO (),
+    -- ^ Initialise the entity schema.
     tryWriteExperimentEntity :: ExperimentEntity -> IO Bool,
     -- ^ Try to write the experiment entity.
     tryWriteSourceEntity :: SourceEntity -> IO Bool,

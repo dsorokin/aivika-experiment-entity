@@ -77,8 +77,12 @@ data ExperimentEntity =
                      -- ^ the integration method
                      experimentEntityRunCount :: !Int,
                      -- ^ the run count
-                     experimentEntityRealStartTime :: String
+                     experimentEntityRealStartTime :: String,
                      -- ^ the real start time of simulation
+                     experimentEntityCompleted :: Bool,
+                     -- ^ whether the experiment is complete
+                     experimentEntityErrorMessage :: String
+                     -- ^ the error message if something went wrong
                    } deriving (Eq, Ord, Show, Typeable, Generic)
 
 instance NFData ExperimentEntity

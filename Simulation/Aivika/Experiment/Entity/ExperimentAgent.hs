@@ -53,6 +53,8 @@ data ExperimentAgent =
     -- ^ The delay in microseconds before the retry.
     initialiseEntitySchema :: IO (),
     -- ^ Initialise the entity schema.
+    updateExperimentEntity :: ExperimentEntity -> IO (),
+    -- ^ Update the experiment entity.
     tryWriteExperimentEntity :: ExperimentEntity -> IO Bool,
     -- ^ Try to write the experiment entity.
     tryWriteSourceEntity :: SourceEntity -> IO Bool,

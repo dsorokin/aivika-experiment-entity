@@ -81,7 +81,7 @@ data ExperimentEntity =
                      -- ^ the real start time of simulation
                      experimentEntityCompleted :: Bool,
                      -- ^ whether the experiment is complete
-                     experimentEntityErrorMessage :: String
+                     experimentEntityErrorMessage :: Maybe String
                      -- ^ the error message if something went wrong
                    } deriving (Eq, Ord, Show, Typeable, Generic)
 

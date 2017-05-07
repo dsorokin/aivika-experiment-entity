@@ -32,6 +32,7 @@ import Control.Concurrent.MVar
 
 import Data.List
 import qualified Data.Map as M
+import Data.Monoid
 
 import Simulation.Aivika
 import Simulation.Aivika.Experiment.Entity.Types

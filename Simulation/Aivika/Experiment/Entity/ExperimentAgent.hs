@@ -56,6 +56,8 @@ data ExperimentAgent =
     -- ^ Initialise the entity schema.
     updateExperimentEntity :: ExperimentEntity -> IO Bool,
     -- ^ Update the experiment entity.
+    deleteExperimentEntity :: ExperimentEntity -> IO Bool,
+    -- ^ Delete the experiment entity.
     tryWriteExperimentEntity :: ExperimentEntity -> IO Bool,
     -- ^ Try to write the experiment entity.
     tryWriteSourceEntity :: SourceEntity -> IO Bool,

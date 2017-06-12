@@ -1,5 +1,5 @@
 name:            aivika-experiment-entity
-version:         0.3
+version:         0.4
 synopsis:        Entities of Aivika simulation experiments
 description:
     It defines the entities of simulation experiments.

@@ -272,7 +272,7 @@ readLastValueListEntities agent expId srcId runIndex = fmap (map $ fmap lastEnti
         lastDataItem [x] = x
         lastDataItem _   = error "Expected a single value list only: readLastValueListEntities"
 
--- ^ Require that the source entity by the experiment identifier and source key can be read.
+-- | Require that the source entity by the experiment identifier and source key can be read.
 requireSourceEntityByKey :: ExperimentAgent -> ExperimentUUID -> SourceKey -> IO SourceEntity
 requireSourceEntityByKey agent expId srcKey =
   do x <- readSourceEntityByKey agent expId srcKey

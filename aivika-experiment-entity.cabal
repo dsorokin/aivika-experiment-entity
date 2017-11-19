@@ -1,5 +1,5 @@
 name:            aivika-experiment-entity
-version:         0.4
+version:         0.5
 synopsis:        Entities of Aivika simulation experiments
 description:
     It defines the entities of simulation experiments.
@@ -31,7 +31,7 @@ library
                      deepseq >= 1.1.0.0,
                      binary >= 0.6.4.0,
                      random >= 1.0.0.3,
-                     aivika >= 5.1
+                     aivika >= 5.5
 
     extensions:      DeriveGeneric,
                      DeriveDataTypeable
